@@ -8,14 +8,14 @@ export class ProjectController {
             const projects = await Project.find({})
             res.json(projects)
         } catch (error) {
-            console.log(error)
+            res.status(500).json({error: 'There was an error!'})
         }
     }
 
     static getProjectById = async (req: Request, res: Response) => { 
         const { id } = req.params
         try {
-            const project = await Project.findById(id)
+            const project = await Project.findById(id).populate('tasks')
 
             if (!project) {
                 const error = new Error('Project not found!')
@@ -24,8 +24,7 @@ export class ProjectController {
 
             res.json(project)
         } catch (error) {
-            console.log(error)
-            
+            res.status(500).json({error: 'There was an error!'})
         }
     }
 
@@ -35,24 +34,25 @@ export class ProjectController {
             await project.save()
             res.send('Project created sucessfully!')
         } catch (error) {
-            console.log(error)
+            res.status(500).json({error: 'There was an error!'})
         }        
     }
 
     static updateProjectById = async (req: Request, res: Response) => { 
         const { id } = req.params
         try {
-            const project = await Project.findByIdAndUpdate(id, req.body)
-
+            const project = await Project.findById(id)
             if (!project) {
                 const error = new Error('Project not found!')
                 return res.status(404).json({error: error.message})
             }
-
+            project.projectName = req.body.projectName
+            project.clientName = req.body.clientName
+            project.description = req.body.description
             await project.save()
-            res.json('Project updated!')
+            res.json(project)
         } catch (error) {
-            console.log(error)
+            res.status(500).json({error: 'There was an error!'})
         }
     }
 
@@ -69,7 +69,7 @@ export class ProjectController {
             await project.deleteOne()
             res.json('Project deleted!')
         } catch (error) {
-            console.log(error)  
+            res.status(500).json({error: 'There was an error!'})
         }
     }
 }
